@@ -15,6 +15,8 @@ export default defineConfig({
     hmr: process.env.DISABLE_HMR !== 'true',
   },
   build: {
+    outDir: 'docs',
+    emptyOutDir: true,
     rollupOptions: {
       output: {
         entryFileNames: `assets/app.js`,
