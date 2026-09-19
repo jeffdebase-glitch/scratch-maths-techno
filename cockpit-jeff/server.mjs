@@ -74,7 +74,9 @@ server.listen(port,'0.0.0.0',async ()=>{
       const files=data.files||[];
       console.log('Drive bridge OK - '+files.length+' PDF');
       if(files.length){
-        const probe=await bridge({action:'file',id:files[0].id});
+        const smallest=[...files].sort((a,b)=>Number(a.size||Infinity)-Number(b.size||Infinity))[0];
+        console.log('Drive smallest PDF - '+Number(smallest.size||0)+' bytes');
+        const probe=await bridge({action:'file',id:smallest.id});
         if(probe?.ok&&probe.base64){
           const bytes=Buffer.from(probe.base64,'base64').length;
           console.log('Drive PDF fetch OK - '+bytes+' bytes - '+String(probe.name||'PDF'));
