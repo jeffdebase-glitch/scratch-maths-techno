@@ -3,6 +3,8 @@ async function browserDriveFile(token,id){const r=await fetch(`https://www.googl
 async function syncDrive({silent=false}={}){saveSettingsFromDriveFields();let files,fetcher,mode='server';try{files=await backendDriveList();fetcher=id=>backendDriveFile(id)}catch(e){mode='browser';if(silent){$('#driveStatus').textContent='● Sync serveur à configurer';return}const token=await browserToken();files=await browserDriveList(token);fetcher=id=>browserDriveFile(token,id)}const fresh=files.filter(f=>!state.driveSeen.includes(f.id)).sort((a,b)=>new Date(a.modifiedTime)-new Date(b.modifiedTime));if(!fresh.length){$('#driveStatus').textContent='● À jour';toast('Google Drive est à jour');return}$('#driveStatus').textContent=`● ${fresh.length} nouveau(x) PDF`;for(const f of fresh){toast(`Analyse ${f.name}…`);try{const blob=await fetcher(f.id),p=await parseFitProfilePdf(blob,f.name);if(Number.isFinite(p.weight)){addMeasurement(p,f.id)}else{manualConfirm(p,f.name,f.id);break}}catch(e){console.error(e);toast('Erreur sur '+f.name)}}state.lastDriveSync=new Date().toISOString();saveState();renderAll();$('#driveStatus').textContent=`● Sync ${mode==='server'?'automatique':'Google'} terminée`;toast('Synchronisation terminée')}
 function saveSettingsFromDriveFields(){state.settings.driveFolderId=$('#driveFolderId')?.value.trim()||state.settings.driveFolderId;state.settings.googleClientId=$('#googleClientId')?.value.trim()||'';state.settings.autoSync=!!$('#autoSync')?.checked;saveState()}
 
+async function syncLinkedData({silent=false}={}){try{const r=await fetch('/.netlify/functions/linked-data',{cache:'no-store'});if(!r.ok)throw new Error('linked backend unavailable');const data=await r.json(),days=data.days||{};state.connected={...state.connected,...days};saveState();renderAll();if(!silent)toast('Données liées synchronisées')}catch(e){if(!silent)toast('Données liées non configurées')}}
+
 function parseCSV(text){const lines=text.trim().split(/\r?\n/);if(lines.length<2)return [];const heads=lines[0].split(/[,;]/).map(x=>x.trim());return lines.slice(1).filter(Boolean).map(line=>{const vals=line.split(/[,;]/);const o={};heads.forEach((h,i)=>o[h]=vals[i]?.trim());return o})}
 async function importConnected(file){let rows;if(file.name.toLowerCase().endsWith('.json'))rows=JSON.parse(await file.text());else rows=parseCSV(await file.text());let n=0;rows.forEach(r=>{const date=(r.date||r.Date||'').slice(0,10);if(!date)return;state.connected[date]={steps:num(r.steps),calories:num(r.calories),activityMinutes:num(r.activityMinutes||r.activity),sleepHours:num(r.sleepHours||r.sleep),trainingMinutes:num(r.trainingMinutes||r.training)};n++});saveState();renderAll();toast(`${n} jours importés`)}
 function downloadCSVTemplate(){const s='date,steps,calories,activityMinutes,sleepHours,trainingMinutes\n2026-09-19,10000,2200,75,7.5,45\n';downloadBlob(new Blob([s],{type:'text/csv'}),'cockpit-jeff-donnees-liees-modele.csv')}
@@ -17,9 +19,12 @@ function bind(){$$('.nav-btn').forEach(b=>b.addEventListener('click',()=>switchV
 
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(console.warn);
 bind();renderAll();
+if(location.protocol.startsWith('http')){
+  setTimeout(()=>syncLinkedData({silent:true}),700);
+}
 if(state.settings.autoSync&&location.protocol.startsWith('http')){
   setTimeout(()=>syncDrive({silent:true}).catch(()=>{}),1200);
-  setInterval(()=>{if(document.visibilityState==='visible')syncDrive({silent:true}).catch(()=>{})},5*60*1000);
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncDrive({silent:true}).catch(()=>{})});
+  setInterval(()=>{if(document.visibilityState==='visible'){syncDrive({silent:true}).catch(()=>{});syncLinkedData({silent:true})}},5*60*1000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){syncDrive({silent:true}).catch(()=>{});syncLinkedData({silent:true})}});
 }
 })();
