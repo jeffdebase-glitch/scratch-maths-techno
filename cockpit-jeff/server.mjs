@@ -53,7 +53,7 @@ function staticFile(req,res,u){
   fs.createReadStream(file).pipe(res);
 }
 
-http.createServer(async (req,res)=>{
+const server=http.createServer(async (req,res)=>{
   const u=new URL(req.url,'http://localhost');
   try{
     if(u.pathname.startsWith('/.netlify/functions/')||u.pathname==='/api/drive/status'){
@@ -64,4 +64,15 @@ http.createServer(async (req,res)=>{
   }catch(e){
     send(res,500,JSON.stringify({error:String(e.message||e)}),'application/json');
   }
-}).listen(port,'0.0.0.0',()=>console.log('Cockpit Jeff listening on '+port));
+});
+
+server.listen(port,'0.0.0.0',async ()=>{
+  console.log('Cockpit Jeff listening on '+port);
+  try{
+    const data=await bridge({action:'list'});
+    if(data?.ok) console.log('Drive bridge OK - '+((data.files||[]).length)+' PDF');
+    else console.log('Drive bridge response error');
+  }catch(e){
+    console.error('Drive bridge FAILED - '+String(e.message||e));
+  }
+});
