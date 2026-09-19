@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7faff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Cockpit Jeff">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles.css">
+<title>Cockpit poids — Jeff</title>
+</head>
+<body>
+<div id="toast" class="toast" aria-live="polite"></div>
+<main class="shell">
+  <section id="today" class="view active" data-view="today">
+    <div class="hero-head">
+      <div><div id="todayDate" class="date-line"></div><h1>Cockpit poids</h1><p>Petits gestes. Grands résultats.</p></div>
+      <button class="count-pill" data-action="go-data"><span class="i i-chart"></span><b id="measureCount">46</b> pesées <span>›</span></button>
+    </div>
+    <div class="mountain" aria-hidden="true"></div>
+    <article class="card main-weight-card">
+      <div class="card-title-row"><div class="title-with-icon"><span class="icon-circle green"><span class="i i-scale"></span></span><strong>Poids actuel</strong></div><div class="status-pill green" id="zoneStatus">Dans la zone</div><button class="link-btn" data-action="go-settings">◎ Objectif ›</button></div>
+      <div class="weight-grid"><div><div class="hero-weight"><span id="currentWeight">69,85</span><small>kg</small></div><div class="delta green-text" id="weekDelta">↓ 0,75 kg <span>sur 7 jours</span></div></div><div class="target-box"><div class="target-label" id="targetLabel">68 – 71 kg</div><div class="range-track"><div class="range-zone" id="rangeZone"></div><div class="range-dot" id="rangeDot"></div></div><div class="range-ends"><span id="rangeMinLabel">65</span><span id="rangeMidLabel">Objectif</span><span id="rangeMaxLabel">75</span></div></div></div>
+      <div class="trend-strip"><span class="icon-circle mint"><span class="i i-trend"></span></span><div><small>Moyenne mobile</small><strong id="movingAvg">—</strong></div><div class="divider"></div><div><small>Écart à la tendance</small><strong id="trendGap">—</strong></div></div>
+    </article>
+    <div class="two-col">
+      <article class="card metric-card lilac"><div class="metric-top"><div class="title-with-icon"><span class="icon-circle purple"><span class="i i-drop"></span></span><strong>Graisse</strong></div><span class="spark" id="fatSpark"></span></div><div class="metric-value" id="pbfValue">—</div><div class="metric-change" id="pbfChange">—</div></article>
+      <article class="card metric-card blue"><div class="metric-top"><div class="title-with-icon"><span class="icon-circle blue"><span class="i i-dumbbell"></span></span><strong>Muscle</strong></div><span class="spark" id="muscleSpark"></span></div><div class="metric-value" id="muscleValue">—</div><div class="metric-change" id="muscleChange">—</div></article>
+    </div>
+    <article class="card chart-card">
+      <div class="card-title-row"><div class="title-with-icon"><span class="icon-circle pale-blue"><span class="i i-chart"></span></span><strong>Tendance</strong></div><button class="link-btn" data-action="go-trends">Voir plus ›</button></div>
+      <div class="segment" id="homePeriod"><button data-days="30" class="active">30 J</button><button data-days="90">90 J</button><button data-days="180">180 J</button><button data-days="9999">Tout</button></div>
+      <div class="segment metrics" id="homeMetric"><button data-metric="weight" class="active">Poids</button><button data-metric="pbf">% graisse</button><button data-metric="muscle">Muscle</button><button data-metric="fat">Masse grasse</button></div>
+      <div id="homeChart" class="svg-chart"></div>
+    </article>
+    <article class="card signal-card"><span class="icon-circle mint big-icon"><span class="i i-bulb"></span></span><div><small>Signal du jour</small><h2 id="signalTitle">Tendance stable</h2><p id="signalText">—</p></div><span class="chev">›</span></article>
+    <article class="card linked-card"><div class="card-title-row"><div class="title-with-icon"><span class="icon-circle pale-blue"><span class="i i-link"></span></span><strong>Données liées</strong></div><button class="link-btn" data-action="go-settings">Gérer ›</button></div><div id="linkedMini" class="linked-grid"></div><div id="correlationNote" class="micro-note">Aucune donnée externe connectée pour le moment.</div></article>
+    <button class="wide-action" data-action="open-weekly"><span class="i i-report"></span> Rapport hebdomadaire</button>
+    <div class="fineprint">Les mesures d’impédancemétrie servent surtout au suivi de tendance. Les corrélations affichées n’établissent pas de lien de causalité.</div>
+  </section>
+  <section id="trends" class="view" data-view="trends">
+    <div class="hero-head"><div><div class="date-line">Analyse</div><h1>Analyses</h1><p>Comprendre. Progresser. Durable­ment.</p></div><div class="count-pill"><span class="i i-chart"></span><b id="measureCount2">46</b> pesées</div></div><div class="mountain"></div>
+    <article class="card compare-card"><div class="card-title-row"><div class="title-with-icon"><span class="icon-circle pale-blue"><span class="i i-compare"></span></span><strong>Comparateur de périodes</strong></div></div>
+      <div class="compare-selects"><select id="periodA"><option value="monthCurrent">Septembre</option><option value="last90">90 derniers jours</option><option value="last30">30 derniers jours</option></select><span>VS</span><select id="periodB"><option value="monthPrev">Août</option><option value="prev90">90 précédents</option><option value="prev30">30 précédents</option></select></div>
+      <div id="compareStats" class="three-col"></div>
+    </article>
+    <article class="card"><div class="card-title-row"><div><div class="section-title">Vue année</div><div class="section-sub">De la première pesée à aujourd’hui</div></div><span class="link-btn">Tout l’historique</span></div><div id="yearChart" class="svg-chart year"></div><div id="phaseBar" class="phase-bar"></div></article>
+    <article class="card stability-card"><div class="card-title-row"><div class="title-with-icon"><span class="icon-circle mint"><span class="i i-shield"></span></span><strong>Score de stabilité</strong></div><button class="info-dot" data-action="stability-info">i</button></div><div class="stability-layout"><div><div class="score" id="stabilityScore">—</div><div class="status-pill green" id="stabilityLabel">—</div></div><div><p>Mesure statistique de la dispersion sur 90 jours, normalisée par la largeur de la zone cible.</p><div class="score-track"><span id="scoreFill"></span></div><div class="score-axis"><span>0</span><span>50</span><span>100</span></div></div></div></article>
+    <article class="card alert-card"><div class="card-title-row"><div class="title-with-icon"><span class="icon-circle orange"><span class="i i-bolt"></span></span><strong>Variations brusques</strong></div><button class="link-btn" data-action="go-data-variation">Voir toutes ›</button></div><div id="variationSummary"></div></article>
+  </section>
+  <section id="data" class="view" data-view="data">
+    <div class="hero-head"><div><div class="date-line">Historique</div><h1>Journal & pesées</h1><p>Comprendre le contexte. Voir la progression.</p></div><div class="count-pill"><b id="measureCount3">46</b> pesées</div></div><div class="mountain"></div>
+    <article class="card latest-summary" id="latestSummary"></article>
+    <article id="variationBanner" class="card alert-banner"></article>
+    <article class="card journal-card"><div class="card-title-row"><div class="title-with-icon"><span class="icon-circle pale-blue"><span class="i i-list"></span></span><strong>Historique des pesées</strong></div><span class="link-btn">Filtrer</span></div><div class="segment journal-filter" id="journalFilter"><button class="active" data-filter="all">Tous</button><button data-filter="tagged">Avec tags</button><button data-filter="variation">Variations</button><button data-filter="week">Cette semaine</button></div><div id="journalList" class="journal-list"></div></article>
+    <article class="card"><div class="card-title-row"><div class="title-with-icon"><span class="icon-circle mint"><span class="i i-chart"></span></span><strong>Corrélations utiles</strong></div></div><div id="correlationPanel" class="correlation-panel"></div></article>
+  </section>
+  <section id="settings" class="view" data-view="settings">
+    <div class="hero-head"><div><div class="date-line">Préférences</div><h1>Réglages & sync</h1><p>Connectez, personnalisez, progressez.</p></div><div class="count-pill"><b id="measureCount4">46</b> pesées</div></div><div class="mountain"></div>
+    <article class="card"><div class="settings-row"><span class="icon-circle mint large"><span class="i i-drive"></span></span><div class="grow"><h3>Google Drive</h3><div id="driveStatus" class="sync-status">● Prêt à configurer</div><p>Les nouveaux PDF FitProfile du dossier « Pesée domicile » peuvent être récupérés puis analysés par OCR.</p></div></div>
+      <div class="form-grid"><label>Dossier Drive<input id="driveFolderId" type="text" value="1BAs1jR4W7IgtyudZ4j0pmcobBKCRa62b"></label><label>Google OAuth Client ID<input id="googleClientId" type="text" placeholder="…apps.googleusercontent.com"></label></div>
+      <div class="button-row"><button class="secondary" data-action="import-pdf">Importer un PDF</button><button class="primary" data-action="sync-drive">Synchroniser Drive</button></div>
+      <label class="toggle-line"><input id="autoSync" type="checkbox"><span>Synchroniser automatiquement à l’ouverture quand l’accès serveur est configuré</span></label>
+      <div class="help-box">Pour une synchro Drive totalement automatique sans popup Google, le déploiement Netlify fourni inclut deux fonctions serveur. Elles nécessitent une seule fois les identifiants OAuth dans les variables d’environnement.</div>
+    </article>
+    <article class="card"><div class="card-title-row"><div class="title-with-icon"><span class="icon-circle purple"><span class="i i-target"></span></span><div><strong>Objectif</strong><div class="section-sub">Personnalisez la zone cible.</div></div></div></div><div class="form-grid"><label>Zone basse<input id="targetLow" type="number" step="0.1"></label><label>Zone haute<input id="targetHigh" type="number" step="0.1"></label><label>Cible unique<input id="targetSingle" type="number" step="0.1"></label></div><div class="segment mode-select" id="modeSelect"><button data-mode="loss">↘ Perte</button><button data-mode="maintain">＝ Maintien</button><button data-mode="single">◎ Cible unique</button></div><button class="primary full" data-action="save-goal">Enregistrer l’objectif</button></article>
+    <article class="card"><div class="settings-row"><span class="icon-circle mint large"><span class="i i-phone"></span></span><div class="grow"><h3>Installer l’app</h3><p>Cockpit Jeff peut s’ouvrir plein écran et rester disponible hors ligne.</p></div></div><button class="primary full" data-action="install-pwa">Installer Cockpit Jeff</button></article>
+    <article class="card"><div class="card-title-row"><div class="title-with-icon"><span class="icon-circle pale-blue"><span class="i i-link"></span></span><div><strong>Données connectées</strong><div class="section-sub">Pas, calories, activité, sommeil, entraînement.</div></div></div></div><div class="connected-toggles" id="connectedToggles"></div><div class="button-row"><button class="secondary" data-action="download-csv">Modèle CSV</button><button class="primary" data-action="import-connected">Importer CSV / JSON</button></div><div class="help-box">Une PWA Safari ne peut pas lire directement Apple HealthKit. L’import CSV/JSON fonctionne maintenant ; une automatisation via Raccourcis iOS ou une app native pourra être branchée ensuite sans changer le modèle de données.</div></article>
+    <article class="card"><div class="card-title-row"><div class="title-with-icon"><span class="icon-circle pale-blue"><span class="i i-report"></span></span><div><strong>Exports</strong><div class="section-sub">Bilans hebdomadaires et mensuels.</div></div></div></div><div class="button-row"><button class="secondary" data-action="export-image">Hebdo en image</button><button class="primary" data-action="export-pdf">Hebdo PDF</button></div><div class="button-row"><button class="secondary" data-action="export-month-image">Mensuel en image</button><button class="primary" data-action="export-month-pdf">Mensuel PDF</button></div></article>
+  </section>
+</main>
+<nav class="bottom-nav"><button class="nav-btn active" data-nav="today"><span class="i i-home"></span><span>Vue</span></button><button class="nav-btn" data-nav="trends"><span class="i i-trend"></span><span>Tendance</span></button><button class="nav-btn" data-nav="data"><span class="i i-db"></span><span>Données</span></button><button class="nav-btn" data-nav="settings"><span class="i i-gear"></span><span>Réglages</span></button></nav>
+<div id="modal" class="modal hidden"><div class="modal-backdrop" data-action="close-modal"></div><div class="modal-sheet"><div class="grabber"></div><div id="modalContent"></div></div></div>
+<input id="pdfInput" type="file" accept="application/pdf" multiple hidden>
+<input id="connectedInput" type="file" accept=".csv,.json,text/csv,application/json" hidden>
+<script src="data.js"></script><script src="app.js"></script>
+</body></html>
