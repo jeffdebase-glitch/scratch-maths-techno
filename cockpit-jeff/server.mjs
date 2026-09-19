@@ -20,6 +20,42 @@ async function bridge(params){
   return r.json();
 }
 
+async function bridgePost(payload){
+  const base=process.env.DRIVE_BRIDGE_URL;
+  const token=process.env.COCKPIT_TOKEN;
+  if(!base||!token) throw new Error('Bridge Drive non configuré');
+  const r=await fetch(base,{
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body:JSON.stringify({...payload,token}),
+    redirect:'follow',
+    cache:'no-store'
+  });
+  if(!r.ok) throw new Error('Bridge HTTP '+r.status);
+  return r.json();
+}
+
+function readJson(req,max=100000){
+  return new Promise((resolve,reject)=>{
+    let data='';
+    req.on('data',chunk=>{
+      data+=chunk;
+      if(data.length>max){reject(new Error('payload too large'));req.destroy();}
+    });
+    req.on('end',()=>{
+      try{resolve(JSON.parse(data||'{}'))}catch(e){reject(new Error('invalid json'))}
+    });
+    req.on('error',reject);
+  });
+}
+
+function validDate(v){return /^20\d{2}-\d{2}-\d{2}$/.test(String(v||''))}
+function cleanNumber(v,min,max){
+  if(v===null||v===undefined||v==='') return null;
+  const n=Number(v);
+  return Number.isFinite(n)&&n>=min&&n<=max?n:null;
+}
+
 async function handleApi(req,res,u){
   if(u.pathname==='/.netlify/functions/drive-list'){
     const data=await bridge({action:'list'});
@@ -34,6 +70,29 @@ async function handleApi(req,res,u){
     const buf=Buffer.from(data.base64,'base64');
     res.writeHead(200,{'content-type':data.mimeType||'application/pdf','cache-control':'no-store'});
     return res.end(buf);
+  }
+  if(u.pathname==='/.netlify/functions/linked-data' && req.method==='GET'){
+    const data=await bridge({action:'linked'});
+    if(!data.ok) return send(res,502,JSON.stringify(data),'application/json');
+    return send(res,200,JSON.stringify({days:data.days||{}}),'application/json');
+  }
+  if(u.pathname==='/api/linked' && req.method==='POST'){
+    const auth=req.headers.authorization||'';
+    const token=process.env.COCKPIT_TOKEN||'';
+    if(!token||auth!==('Bearer '+token)) return send(res,401,JSON.stringify({ok:false,error:'unauthorized'}),'application/json');
+    const body=await readJson(req);
+    if(!validDate(body.date)) return send(res,400,JSON.stringify({ok:false,error:'invalid_date'}),'application/json');
+    const payload={
+      action:'linked-upsert',
+      date:body.date,
+      steps:cleanNumber(body.steps,0,100000),
+      calories:cleanNumber(body.calories,0,10000),
+      activityMinutes:cleanNumber(body.activityMinutes,0,1440),
+      sleepHours:cleanNumber(body.sleepHours,0,24),
+      trainingMinutes:cleanNumber(body.trainingMinutes,0,1440)
+    };
+    const data=await bridgePost(payload);
+    return send(res,data.ok?200:502,JSON.stringify(data),'application/json');
   }
   if(u.pathname==='/api/drive/status'){
     return send(res,200,JSON.stringify({configured:Boolean(process.env.DRIVE_BRIDGE_URL&&process.env.COCKPIT_TOKEN)}),'application/json');
@@ -56,7 +115,7 @@ function staticFile(req,res,u){
 const server=http.createServer(async (req,res)=>{
   const u=new URL(req.url,'http://localhost');
   try{
-    if(u.pathname.startsWith('/.netlify/functions/')||u.pathname==='/api/drive/status'){
+    if(u.pathname.startsWith('/.netlify/functions/')||u.pathname.startsWith('/api/')){
       const handled=await handleApi(req,res,u);
       if(handled!==false) return;
     }
