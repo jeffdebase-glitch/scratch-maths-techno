@@ -2,7 +2,7 @@
 'use strict';
 const DAY=86400000;
 const STORE='cockpitJeffStateV4';
-const DEFAULT_SETTINGS={targetLow:68,targetHigh:71,targetSingle:70,mode:'maintain',driveFolderId:'1BAs1jR4W7IgtyudZ4j0pmcobBKCRa62b',googleClientId:'',autoSync:true,connectedToggles:{steps:true,calories:true,activity:true,sleep:true,training:true}};
+const DEFAULT_SETTINGS={targetLow:68,targetHigh:71,targetSingle:70,mode:'maintain',driveFolderId:'1BAs1jR4W7IgtyudZ4j0pmcobBKCRa62b',googleClientId:'',autoSync:true,connectedToggles:{steps:true,calories:true,heartRate:true,activity:true,sleep:true,training:true}};
 const DEFAULT_DRIVE_SEEN=['1DB9fo_N1E8udcKQFRHemve8N4VVKes0M','1fmRWWyki0p7M6AvKVPPWrhGzzJlupaMW','1RIpyi5fj4VHpkT7Pp0YNjMdxJiLr2gvo','1p0kQQ-9vRdaAMzCNMGwOUIpktv7VCEA9','19FeCs5kWYSVwCqh31w3nUOxx_UduK9Kh'];
 const TAGS=['restaurant','repas salé','voyage','mauvais sommeil','entraînement','écart alimentaire'];
 const METRICS={weight:{label:'Poids',unit:'kg',digits:2},pbf:{label:'Graisse',unit:'%',digits:1},muscle:{label:'Muscle',unit:'kg',digits:1},fat:{label:'Masse grasse',unit:'kg',digits:2}};
@@ -11,7 +11,7 @@ let currentHomeDays=30,currentHomeMetric='weight',journalFilter='all';
 let state=loadState();
 let measurements=mergeMeasurements();
 
-function loadState(){try{const x=JSON.parse(localStorage.getItem(STORE)||'{}');return {settings:{...DEFAULT_SETTINGS,...(x.settings||{}),connectedToggles:{...DEFAULT_SETTINGS.connectedToggles,...(x.settings?.connectedToggles||{})}},extra:x.extra||[],context:x.context||{},connected:x.connected||{},driveSeen:Array.isArray(x.driveSeen)?x.driveSeen:[...DEFAULT_DRIVE_SEEN],lastDriveSync:x.lastDriveSync||null};}catch(e){return {settings:{...DEFAULT_SETTINGS},extra:[],context:{},connected:{},driveSeen:[...DEFAULT_DRIVE_SEEN],lastDriveSync:null};}}
+function loadState(){const baseConnected={...(window.BASE_CONNECTED||{})};try{const x=JSON.parse(localStorage.getItem(STORE)||'{}');return {settings:{...DEFAULT_SETTINGS,...(x.settings||{}),connectedToggles:{...DEFAULT_SETTINGS.connectedToggles,...(x.settings?.connectedToggles||{})}},extra:x.extra||[],context:x.context||{},connected:{...baseConnected,...(x.connected||{})},driveSeen:Array.isArray(x.driveSeen)?x.driveSeen:[...DEFAULT_DRIVE_SEEN],lastDriveSync:x.lastDriveSync||null};}catch(e){return {settings:{...DEFAULT_SETTINGS},extra:[],context:{},connected:baseConnected,driveSeen:[...DEFAULT_DRIVE_SEEN],lastDriveSync:null};}}
 function saveState(){localStorage.setItem(STORE,JSON.stringify(state));}
 function mergeMeasurements(){const all=[...(window.BASE_MEASUREMENTS||[]),...(state.extra||[])].map(m=>({...m})).sort((a,b)=>new Date(a.date)-new Date(b.date));const out=[];for(const m of all){const mt=+new Date(m.date);let dup=null;for(let i=out.length-1;i>=0;i--){const dt=Math.abs(mt-(+new Date(out[i].date)));if(dt>5*60*1000)break;if(Math.abs((out[i].weight??999)-(m.weight??-999))<=0.08){dup=out[i];break}}if(!dup){out.push(m);continue}for(const [k,v] of Object.entries(m)){if(v!==null&&v!==undefined&&v!=='')dup[k]=v}}return out;}
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
